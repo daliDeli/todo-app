@@ -13,14 +13,26 @@ use Illuminate\Http\Request;
 |
 */
 
-Auth::routes();
 
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/todos', 'TodosController@index');
-Route::post('/todos', 'TodosController@store');
-Route::patch('/todos/{todo}','TodosController@update');
-Route::delete('/todos/{todo}','TodosController@destroy');
+Route::group([
+    'prefix' => 'auth'
+], function ($router) {
+    Route::post('login', 'AuthController@login');
+    Route::post('logout', 'AuthController@logout');
+    Route::post('refresh', 'AuthController@refresh');
+    Route::post('me', 'AuthController@me');
+});
+
+Route::group([
+    'middleware' => 'auth:api'
+], function ($router) {
+    Route::get('/todos', 'TodosController@index');
+    Route::post('/todos', 'TodosController@store');
+    Route::patch('/todos/{todo}','TodosController@update');
+    Route::delete('/todos/{todo}','TodosController@destroy');
+});

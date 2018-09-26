@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Todo;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreTodoRequest;
 
 class TodosController extends Controller
 {
@@ -14,17 +15,8 @@ class TodosController extends Controller
      */
     public function index()
     {
-        return Todo::all();
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $userId = auth()->user()->user;
+        return Todo::where('id', $userId)->get();
     }
 
     /**
@@ -33,14 +25,9 @@ class TodosController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreTodoRequest $request)
     {
-        $data = $request->validate([
-            'title' => 'required|string',
-            'completed' => 'required|boolean'
-        ]);
-
-        $todo = Todo::create($data);
+        $todo = Todo::create($request);
 
         return response($todo, 201);
     }
@@ -57,29 +44,15 @@ class TodosController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Todo  $todo
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Todo $todo)
-    {
-        
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Todo  $todo
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Todo $todo)
+    public function update(StoreTodoRequest $request, Todo $todo)
     {
-        $data = $request->validate([
-            'title' => 'required|string',
-            'completed' => 'required|boolean'
-        ]);
+    
 
         $todo->update($data);
 
