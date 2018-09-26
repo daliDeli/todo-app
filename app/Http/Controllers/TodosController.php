@@ -64,14 +64,18 @@ class TodosController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Todo  $todo
+     * @param  int  $todoId
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Todo $todo)
+    public function destroy($todoId)
     {// use findOrFail()
+        $todo = Todo::where('user', auth()->user()->id)
+            ->where('id', $todoId)
+            ->firstOrFail();
+
         $todo->delete();
 
-        // Todo::findOrfail($todo->$id);
+        // Todo::findOrFail($todo->$id)->delete();
 
         return response($todo, 200);
 
