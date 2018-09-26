@@ -15,8 +15,10 @@ class TodosController extends Controller
      */
     public function index()
     {
-        $userId = auth()->user()->user;
-        return Todo::where('id', $userId)->get();
+        $userId = auth()->user()->id;
+        
+        // return Todo::where('user', $userId)->get();
+        return Todo::where('user', $userId)->paginate(10);
     }
 
     /**
@@ -66,10 +68,12 @@ class TodosController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy(Todo $todo)
-    {
+    {// use findOrFail()
         $todo->delete();
 
-        return response("This item is deleted", 200);
+        // Todo::findOrfail($todo->$id);
+
+        return response($todo, 200);
 
     }
 }
