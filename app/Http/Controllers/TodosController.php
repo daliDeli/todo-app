@@ -29,30 +29,34 @@ class TodosController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request\StoreTodoRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(StoreTodoRequest $request)
     {
-        return $this->todoService->createTodo($request->all());
+        $todos = $this->todoService->createTodo($request->all());
+
+        return response($todos, Response::HTTP_CREATED);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Todo  $todo
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function show(Request $request)
     {
-        return $this->todoService->getTodoByID($request->id);
+        $todo = $this->todoService->getTodoByID($request->id);
+
+        return response($todo, Response::HTTP_OK);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Todo  $todo
+     * @param  \Illuminate\Http\Request\StoreTodoRequest  $request
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update(StoreTodoRequest $request, $id)
@@ -73,6 +77,8 @@ class TodosController extends Controller
      */
     public function destroy($todoId)
     {
-        return $this->todoService->deleteTodo($todoId);
+        $this->todoService->deleteTodo($todoId);
+
+        return response($todoId, Response::HTTP_OK)
     }
 }
