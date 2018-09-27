@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CheckUser;
+use App\Services\TodoService;
 use App\Todo;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreTodoRequest;
 
 class TodosController extends Controller
 {
-    private $CheckUser;
+    private $todoService;
 
-    function __construct()
-    {
-        $this->CheckUser = new CheckUser();
+    function __construct(TodoService $todo)
+    {//not sure about this dependency injection
+        $this->todoService = $todo;
     }
 
     /**
@@ -23,8 +23,7 @@ class TodosController extends Controller
      */
     public function index()
     {
-        // return Todo::where('user', $userId)->get();
-        return $this->CheckUser->getTodo();
+        return $this->todoService->getTodos();
     }
 
     /**
@@ -35,9 +34,7 @@ class TodosController extends Controller
      */
     public function store(StoreTodoRequest $request)
     {
-        $todo = $this->CheckUser->createTodo($request->all());
-
-        return response($todo, 201);
+        return $this->todoService->createTodo($request->all());
     }
 
     /**
@@ -48,13 +45,7 @@ class TodosController extends Controller
      */
     public function show(Request $request)
     {
-        $this->validate($request, [
-            'id' => 'number|required'
-        ]);
-
-        return $this->CheckUser->getTodoByID($request->id);
-
-        //
+        return $this->todoService->getTodoByID($request->id);
     }
 
     /**
@@ -66,13 +57,12 @@ class TodosController extends Controller
      */
     public function update(StoreTodoRequest $request, $id)
     {
-
+        //http status from Response
         $data = $request->all();
-        $data['id'] = $id;
 
-        $todo = $this->CheckUser->updateTodo($data);
+        $todo = $this->todoService->updateTodo($data, $id);
 
-        return response($todo, 200);
+        return response($todo, Response::HTTP_OK);
     }
 
     /**
@@ -82,21 +72,7 @@ class TodosController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($todoId)
-    {// use findOrFail()
-
-
-        $todo = $this->CheckUser->deleteTodo($todoId);
-        if($todo){
-            $todo->delete();
-            return response($todo, 200);
-        }
-
-        return response($todo, 404);
-
-
-
-        // Todo::findOrFail($todo->$id)->delete();
-
-
+    {
+        return $this->todoService->deleteTodo($todoId);
     }
 }
