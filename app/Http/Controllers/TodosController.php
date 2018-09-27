@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CheckUser;
 use App\Todo;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreTodoRequest;
 
 class TodosController extends Controller
 {
+    private $CheckUser;
+
+    function __construct()
+    {
+        $this->CheckUser = new CheckUser();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -15,10 +23,8 @@ class TodosController extends Controller
      */
     public function index()
     {
-        $userId = auth()->user()->id;
-        
         // return Todo::where('user', $userId)->get();
-        return Todo::where('user', $userId)->paginate(10);
+        return $this->CheckUser->getTodo();
     }
 
     /**
@@ -29,7 +35,7 @@ class TodosController extends Controller
      */
     public function store(StoreTodoRequest $request)
     {
-        $todo = Todo::create($request);
+        $todo = $this->CheckUser->createTodo($request->all());
 
         return response($todo, 201);
     }
@@ -40,8 +46,14 @@ class TodosController extends Controller
      * @param  \App\Todo  $todo
      * @return \Illuminate\Http\Response
      */
-    public function show(Todo $todo)
+    public function show(Request $request)
     {
+        $this->validate($request, [
+            'id' => 'number|required'
+        ]);
+
+        return $this->CheckUser->getTodoByID($request->id);
+
         //
     }
 
@@ -52,11 +64,13 @@ class TodosController extends Controller
      * @param  \App\Todo  $todo
      * @return \Illuminate\Http\Response
      */
-    public function update(StoreTodoRequest $request, Todo $todo)
+    public function update(StoreTodoRequest $request, $id)
     {
-    
 
-        $todo->update($data);
+        $data = $request->all();
+        $data['id'] = $id;
+
+        $todo = $this->CheckUser->updateTodo($data);
 
         return response($todo, 200);
     }
@@ -69,15 +83,20 @@ class TodosController extends Controller
      */
     public function destroy($todoId)
     {// use findOrFail()
-        $todo = Todo::where('user', auth()->user()->id)
-            ->where('id', $todoId)
-            ->firstOrFail();
 
-        $todo->delete();
+
+        $todo = $this->CheckUser->deleteTodo($todoId);
+        if($todo){
+            $todo->delete();
+            return response($todo, 200);
+        }
+
+        return response($todo, 404);
+
+
 
         // Todo::findOrFail($todo->$id)->delete();
 
-        return response($todo, 200);
 
     }
 }
